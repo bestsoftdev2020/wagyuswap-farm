@@ -1,8 +1,8 @@
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 
-import '@pancakeswap/pancake-swap-lib/contracts/token/BEP20/IBEP20.sol';
-import '@pancakeswap/pancake-swap-lib/contracts/token/BEP20/SafeBEP20.sol';
-import '@pancakeswap/pancake-swap-lib/contracts/access/Ownable.sol';
+import './token/BEP20/IBEP20.sol';
+import './token/BEP20/SafeBEP20.sol';
+import './access/Ownable.sol';
 
 import './MasterChef.sol';
 
@@ -13,16 +13,11 @@ contract LotteryRewardPool is Ownable {
     address public adminAddress;
     address public receiver;
     IBEP20 public lptoken;
-    IBEP20 public cake;
+    IBEP20 public wagyu;
 
-    constructor(
-        MasterChef _chef,
-        IBEP20 _cake,
-        address _admin,
-        address _receiver
-    ) public {
+    constructor(MasterChef _chef, IBEP20 _wagyu, address _admin, address _receiver) {
         chef = _chef;
-        cake = _cake;
+        wagyu = _wagyu;
         adminAddress = _admin;
         receiver = _receiver;
     }
@@ -44,8 +39,8 @@ contract LotteryRewardPool is Ownable {
 
     function  harvest(uint256 _pid) external onlyAdmin {
         chef.deposit(_pid, 0);
-        uint256 balance = cake.balanceOf(address(this));
-        cake.safeTransfer(receiver, balance);
+        uint256 balance = wagyu.balanceOf(address(this));
+        wagyu.safeTransfer(receiver, balance);
         emit Harvest(msg.sender, _pid);
     }
 
@@ -54,12 +49,12 @@ contract LotteryRewardPool is Ownable {
     }
 
     function  pendingReward(uint256 _pid) external view returns (uint256) {
-        return chef.pendingCake(_pid, address(this));
+        return chef.pendingWagyu(_pid, address(this));
     }
 
     // EMERGENCY ONLY.
-    function emergencyWithdraw(IBEP20 _token, uint256 _amount) external onlyOwner {
-        cake.safeTransfer(address(msg.sender), _amount);
+    function emergencyWithdraw(uint256 _amount) external onlyOwner {
+        wagyu.safeTransfer(address(msg.sender), _amount);
         emit EmergencyWithdraw(msg.sender, _amount);
     }
 
